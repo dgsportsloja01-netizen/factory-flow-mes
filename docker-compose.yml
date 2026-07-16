@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ffm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ffm_user
+      POSTGRES_PASSWORD: ffm_pass
+      POSTGRES_DB: factory_flow_mes
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ffm-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ffm-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - ffm-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: ffm-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ffm_minio
+      MINIO_ROOT_PASSWORD: ffm_minio_pass
+    command: server /data --console-address ':9001'
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    networks:
+      - ffm-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+networks:
+  ffm-network:
+    driver: bridge
